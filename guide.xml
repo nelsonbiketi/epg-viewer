@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tv>
+  <programme start="20250730120000 +0300" stop="20250730130000 +0300" channel="citizen.tv">
+    <title>News Hour</title>
+  </programme>
+  <programme start="20250730130000 +0300" stop="20250730140000 +0300" channel="citizen.tv">
+    <title>Afternoon Talk</title>
+  </programme>
+</tv>
