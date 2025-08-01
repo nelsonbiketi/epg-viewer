@@ -1,20 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EPG Viewer</title>
+  <meta charset="UTF-8">
+  <title>DStv EPG Viewer</title>
   <style>
-    body { font-family: Arial; padding: 1rem; background: #f5f5f5; }
-    h1 { text-align: center; }
-    .program { background: white; margin: 1rem 0; padding: 1rem; border-radius: 8px; }
-    .channel { font-weight: bold; font-size: 1.2em; }
-    .time { color: #555; }
+    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+    h1 { color: #004080; }
+    .channel { margin-top: 20px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 0 5px #ccc; }
+    .program { margin-bottom: 10px; }
+    .title { font-weight: bold; }
+    .time { color: gray; }
   </style>
 </head>
 <body>
-  <h1>EPG Viewer</h1>
-  <div id="epg-list">Loading...</div>
-  <script src="app.js"></script>
+  <h1>DStv Kenya EPG Viewer</h1>
+  <div id="epg">Loading EPG...</div>
+
+  <script>
+    fetch('guide.xml')
+      .then(response => response.text())
+      .then(data => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data, "application/xml");
+        const progs = xml.getElementsByTagName("programme");
+
+        const byChannel = {};
+        for (let prog of progs) {
+          const chan = prog.getAttribute("channel");
+          const start = prog.getAttribute("start").slice(8, 12);
+          const stop = prog.getAttribute("stop").slice(8, 12);
+          const title = prog.getElementsByTagName("title")[0].textContent;
+          const descNode = prog.getElementsByTagName("desc")[0];
+          const desc = descNode ? descNode.textContent : "";
+
+          if (!byChannel[chan]) byChannel[chan] = [];
+          byChannel[chan].push({ start, stop, title, desc });
+        }
+
+        let html = "";
+        for (let chan in byChannel) {
+          html += `<div class="channel"><h2>${chan}</h2>`;
+          for (let p of byChannel[chan]) {
+            html += `<div class="program">
+              <div class="title">${p.title}</div>
+              <div class="time">${p.start} → ${p.stop}</div>
+              <div class="desc">${p.desc}</div>
+            </div>`;
+          }
+          html += "</div>";
+        }
+
+        document.getElementById("epg").innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById("epg").innerText = "Failed to load guide.xml";
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
